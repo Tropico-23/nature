@@ -133,4 +133,30 @@
       }
     });
   }
+  /* Scroll reveals: apply consistently across content sections, with a safe fallback. */
+  const revealTargets = document.querySelectorAll(
+    ".statement p, .threats__head, .threat, .split > *, .cta .wrap > *, " +
+    ".chapter__body, .solution, .daily li, .columns > *, .site-footer__top > *, .jump a"
+  );
+  if (revealTargets.length) {
+    revealTargets.forEach((el, index) => {
+      el.classList.add("reveal-up");
+      el.style.setProperty("--reveal-index", String(index % 6));
+    });
+
+    if ("IntersectionObserver" in window) {
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -36px 0px" });
+
+      revealTargets.forEach((el) => revealObserver.observe(el));
+    } else {
+      revealTargets.forEach((el) => el.classList.add("is-visible"));
+    }
+  }
 })();
