@@ -7,10 +7,11 @@ declare(strict_types=1);
  * Répond en JSON quand la page l'exige (fetch), sinon par une petite page HTML.
  */
 
-const DB_HOST = '127.0.0.1';
-const DB_USER = 'root';
-const DB_PASS = '';
-const DB_NAME = 'travail';
+// Set these values in the PHP host's environment settings. Do not commit real credentials.
+$dbHost = getenv('DB_HOST') ?: '127.0.0.1';
+$dbUser = getenv('DB_USER');
+$dbPass = getenv('DB_PASS');
+$dbName = getenv('DB_NAME') ?: 'travail';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -55,8 +56,12 @@ if (!preg_match('/^[29][0-9]{7}$/', $tele)) {
     reply(false, 'Le numéro doit compter 8 chiffres et commencer par 2 ou 9.', 422);
 }
 
+if ($dbUser === false || $dbPass === false) {
+    reply(false, 'Le formulaire doit être configuré par l’administrateur du site.', 500);
+}
+
 try {
-    $conx = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    $conx = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
     $conx->set_charset('utf8mb4');
 
     $check = $conx->prepare('SELECT 1 FROM `1` WHERE `email` = ? LIMIT 1');
