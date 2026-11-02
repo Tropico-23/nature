@@ -97,7 +97,7 @@
       return !message;
     };
 
-    const inputs = Array.from(form.querySelectorAll("input[name]"));
+    const inputs = Array.from(form.querySelectorAll("input[name]:not([name=\"website\"])"));
     inputs.forEach((input) => {
       input.addEventListener("blur", () => { if (input.value) check(input); });
       input.addEventListener("input", () => { if (input.getAttribute("aria-invalid") === "true") check(input); });
