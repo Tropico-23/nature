@@ -1,31 +1,39 @@
 # SOS planète Terre
 
-A responsive, multi-page French environmental-awareness website.
+A responsive, multi-page French environmental-awareness website hosted by the Cloudflare Worker named `nature`.
 
 ## Pages
 - `index.html` — homepage and overview of environmental threats
 - `menaces.html` — details about environmental threats
 - `solutions.html` — practical actions and solutions
 - `a-propos.html` — about the project
-- `contact.html` — community signup/contact form
+- `contact.html` — community signup form
 
 ## Images
-Local threat illustrations live in `photos/`. They are SVG files and remain crisp at different screen sizes. The existing hero and solution imagery still uses Unsplash image URLs.
+Local threat illustrations live in `photos/`. The remaining landscape photographs are loaded from Unsplash.
 
-## Run the static pages locally
-Open `index.html` in a browser, or run a web server from the project root:
+## Contact form architecture
+The form posts to `/api/contact` on the same origin. The Cloudflare Worker in `worker/index.js` validates submissions and writes them to the Cloudflare D1 database `nature`. There is no PHP/MySQL dependency.
+
+- D1 binding: `DB`
+- Existing signup table: `"1"` (kept for compatibility with the original database schema)
+- API health check: `GET /api/health`
+- Form endpoint: `POST /api/contact`
+
+The Worker uses prepared statements, server-side validation, duplicate-email handling, a hidden honeypot field, same-origin checks, and a short-window abuse limit using temporary SHA-256 IP fingerprints. The fingerprints are cleaned up after 24 hours.
+
+## Deploy
+Install Wrangler and authenticate with Cloudflare, then run:
 
 ```sh
-python3 -m http.server 8000
+npx wrangler deploy --config wrangler.jsonc
 ```
 
-Then visit `http://localhost:8000`.
+The Wrangler config retains the site root as the static asset directory and sends only `/api/*` requests through the Worker first. The D1 migrations in `database/migrations/` create the signup and anti-abuse tables without dropping existing data.
 
-## Contact form / PHP hosting
-The contact form posts to `ajout.php`, so it requires a PHP host with MySQL and the PHP `mysqli` and `mbstring` extensions. **GitHub Pages alone cannot process this form**, because it serves static files and does not execute PHP.
+## Local preview
+```sh
+npx wrangler dev --config wrangler.jsonc
+```
 
-1. Run `database/schema.sql` on the MySQL server.
-2. Configure `DB_USER` and `DB_PASS` in the PHP hosting environment. Optionally set `DB_HOST` and `DB_NAME`; the defaults are `127.0.0.1` and `travail`.
-3. Do not commit database credentials to Git.
-
-The handler responds with a configuration message if the required database environment settings are missing.
+Do not put API tokens or other secrets in this repository.
