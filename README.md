@@ -18,7 +18,7 @@ The form posts to `/api/contact` on the same origin. The Cloudflare Worker in `w
 - D1 binding: `DB`
 - Existing signup table: `"1"` (kept for compatibility with the original database schema)
 - API health check: `GET /api/health`
-- Form endpoint: `POST /api/contact`
+- Form endpoint: `POST /api/contact`\n- Compatibility endpoint: `POST /ajout.php` (kept temporarily for the already-published static page)
 
 The Worker uses prepared statements, server-side validation, duplicate-email handling, a hidden honeypot field, same-origin checks, and a short-window abuse limit using temporary SHA-256 IP fingerprints. The fingerprints are cleaned up after 24 hours.
 
@@ -26,7 +26,7 @@ The Worker uses prepared statements, server-side validation, duplicate-email han
 Install Wrangler and authenticate with Cloudflare, then run:
 
 ```sh
-npx wrangler deploy --config wrangler.jsonc
+npx wrangler d1 migrations apply nature --remote --config wrangler.jsonc\nnpx wrangler deploy --config wrangler.jsonc
 ```
 
 The Wrangler config retains the site root as the static asset directory and sends only `/api/*` requests through the Worker first. The D1 migrations in `database/migrations/` create the signup and anti-abuse tables without dropping existing data.
