@@ -1,0 +1,11 @@
+# Do not publish project source, migrations, or repository documentation as site assets.
+*.md
+*.jsonc
+*.sql
+*.php
+worker/
+database/
+.github/
+.git/
+.wrangler/
+node_modules/
