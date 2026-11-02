@@ -45,7 +45,11 @@
           <h1>Agir maintenant</h1>
           <p class="lead">Laissez vos coordonnées pour rejoindre la communauté SOS planète Terre. Chaque petit geste compte.</p>
         </div>
-        <form id="contact-form" class="form" action="ajout.php" method="post">
+        <form id="contact-form" class="form" action="/api/contact" method="post">
+          <div hidden aria-hidden="true">
+            <label for="website">Ne pas remplir ce champ</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
           <div class="field">
             <label for="nom">Nom</label>
             <input id="nom" name="nom" type="text" placeholder="Votre nom" autocomplete="family-name" required aria-describedby="nom-error">
