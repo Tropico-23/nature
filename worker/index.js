@@ -139,58 +139,6 @@ export default {
     const url = new URL(request.url);
 
 
-    // Serve a self-contained contact page so stale browser-cached assets cannot interfere.
-    if (request.method === "GET" &&
-        ["/contact", "/contact.html", "/contact-live-fix-2"].includes(url.pathname)) {
-      const html = `<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Contact | SOS planète Terre</title>
-<style>
-*{box-sizing:border-box}body{margin:0;padding:28px 16px;background:#f3f5ef;color:#17372b;font:16px system-ui,sans-serif}
-main{max-width:620px;margin:30px auto;background:white;padding:28px;border-radius:18px;box-shadow:0 12px 40px #17372b12}
-h1{margin-top:0;font-size:30px}p{line-height:1.5;color:#52645a}
-label{display:block;font-weight:600;margin:16px 0 6px}input{width:100%;padding:13px;border:1px solid #cbd5ca;border-radius:9px;font:inherit}
-button{margin-top:22px;width:100%;padding:14px;border:0;border-radius:9px;background:#214d3a;color:white;font:600 16px system-ui}
-button:disabled{opacity:.6}#status{margin-top:16px;font-weight:600;overflow-wrap:anywhere}
-</style></head>
-<body><main><h1>Agir maintenant</h1>
-<p>Laissez vos coordonnées pour rejoindre la communauté SOS planète Terre.</p>
-<form id="contact-form" action="/api/contact" method="post">
-<label for="nom">Nom</label><input id="nom" name="nom" minlength="2" required>
-<label for="prenom">Prénom</label><input id="prenom" name="prenom" minlength="2" required>
-<label for="email">Adresse e-mail</label><input id="email" name="email" type="email" required>
-<label for="tele">Téléphone (8 chiffres)</label><input id="tele" name="tele" inputmode="numeric" pattern="[29][0-9]{7}" maxlength="8" required>
-<label for="adresse">Adresse</label><input id="adresse" name="adresse" minlength="5" required>
-<div hidden><label for="website">Ne pas remplir</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-<button id="submit" type="submit">Rejoindre la communauté</button>
-<p id="status" role="status" aria-live="polite"></p>
-</form></main>
-<script>
-document.getElementById("contact-form").addEventListener("submit",async function(e){
- e.preventDefault();
- const form=e.currentTarget,button=document.getElementById("submit"),status=document.getElementById("status");
- button.disabled=true;status.textContent="Envoi en cours…";
- try{
-  const response=await fetch("/api/contact",{method:"POST",body:new FormData(form),headers:{Accept:"application/json"},cache:"no-store"});
-  const raw=await response.text();let data;
-  try{data=JSON.parse(raw)}catch{throw new Error("Réponse serveur invalide (HTTP "+response.status+"): "+raw.slice(0,180))}
-  status.textContent=(data.ok?"✓ ":"✕ ")+(data.message||("Erreur HTTP "+response.status));
-  status.style.color=data.ok?"#176b3a":"#a12626";
-  if(data.ok)form.reset();
- }catch(err){status.textContent="Échec de connexion : "+err.message;status.style.color="#a12626";console.error(err)}
- finally{button.disabled=false}
-});
-</script></body></html>`;
-      return new Response(html, { status: 200, headers: {
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": "no-store, no-cache, must-revalidate, max-age=0",
-        "pragma": "no-cache",
-        "x-content-type-options": "nosniff"
-      }});
-    }
-
     // Normalize cached contact assets so this page never submits to a legacy PHP URL.
     if (env.ASSETS && request.method === "GET" &&
         (url.pathname === "/contact" || url.pathname === "/contact.html")) {
