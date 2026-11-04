@@ -116,19 +116,33 @@
 
       submit.disabled = true;
       try {
-        const response = await fetch(new URL("/api/contact", window.location.origin), {
+        // Use the endpoint declared by the form. This also works when the
+        // same Worker is reached through a custom hostname or an older page URL.
+        const response = await fetch(form.action, {
           method: "POST",
           body: new FormData(form),
           headers: { Accept: "application/json" },
+          cache: "no-store",
+          credentials: "omit",
         });
-        const result = await response.json();
-        if (!response.ok && !result.message) throw new Error("HTTP " + response.status);
+        const body = await response.text();
+        let result;
+        try {
+          result = JSON.parse(body);
+        } catch {
+          throw new Error("Réponse invalide du serveur (HTTP " + response.status + ").");
+        }
         status.dataset.state = result.ok ? "ok" : "error";
-        status.textContent = result.message;
+        status.textContent = result.message || (response.ok
+          ? "Votre demande a été reçue."
+          : "Le serveur a refusé la demande (HTTP " + response.status + ").");
         if (result.ok) form.reset();
       } catch (err) {
+        console.error("Contact form submission failed:", err);
         status.dataset.state = "error";
-        status.textContent = "Le serveur ne répond pas. Réessayez dans quelques instants.";
+        status.textContent = navigator.onLine
+          ? "Impossible de joindre le formulaire. Vérifiez votre connexion et réessayez."
+          : "Votre téléphone semble hors connexion. Reconnectez-vous puis réessayez.";
       } finally {
         submit.disabled = false;
       }
