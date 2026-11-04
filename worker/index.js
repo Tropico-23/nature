@@ -154,7 +154,7 @@ export default {
       }
     }
 
-    if (url.pathname === "/api/contact" || url.pathname === "/ajout.php") {
+    if (url.pathname === "/api/contact") {
       return handleContact(request, env);
     }
 
