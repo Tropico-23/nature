@@ -159,9 +159,13 @@ export default {
 
     if (env.ASSETS && request.method === "GET" && url.pathname === "/js/main.js") {
       const asset = await env.ASSETS.fetch(request);
+      const script = (await asset.text())
+        .replaceAll("/ajout.php", "/api/contact")
+        .replaceAll("ajout.php", "/api/contact");
       const headers = new Headers(asset.headers);
       headers.set("cache-control", "no-store, max-age=0");
-      return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
+      headers.delete("content-length");
+      return new Response(script, { status: asset.status, statusText: asset.statusText, headers });
     }
 
     if (url.pathname === "/api/health") {
