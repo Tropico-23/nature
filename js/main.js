@@ -116,12 +116,13 @@
 
       submit.disabled = true;
       try {
-        const response = await fetch(form.action, {
+        const response = await fetch(new URL("/api/contact", window.location.origin), {
           method: "POST",
           body: new FormData(form),
           headers: { Accept: "application/json" },
         });
         const result = await response.json();
+        if (!response.ok && !result.message) throw new Error("HTTP " + response.status);
         status.dataset.state = result.ok ? "ok" : "error";
         status.textContent = result.message;
         if (result.ok) form.reset();
