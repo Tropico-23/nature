@@ -18,7 +18,9 @@ The form posts to `/api/contact` on the same origin. The Cloudflare Worker in `w
 - D1 binding: `DB`
 - Existing signup table: `"1"` (kept for compatibility with the original database schema)
 - API health check: `GET /api/health`
-- Form endpoint: `POST /api/contact`\n
+- Form endpoint: `POST /api/contact`
+- Legacy endpoint: `POST /ajout.php` is temporarily supported by the Worker for cached pages; it does not run PHP.
+
 The Worker uses prepared statements, server-side validation, duplicate-email handling, a hidden honeypot field, same-origin checks, and a short-window abuse limit using temporary SHA-256 IP fingerprints. The fingerprints are cleaned up after 24 hours.
 
 ## Deploy
