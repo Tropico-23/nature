@@ -142,7 +142,10 @@ export default {
     // Normalize cached contact assets so this page never submits to a legacy PHP URL.
     if (env.ASSETS && request.method === "GET" &&
         (url.pathname === "/contact" || url.pathname === "/contact.html")) {
-      const asset = await env.ASSETS.fetch(request);
+      const assetUrl = new URL(request.url);
+      if (assetUrl.pathname === "/contact") assetUrl.pathname = "/contact.html";
+      const assetRequest = new Request(assetUrl.toString(), request);
+      const asset = await env.ASSETS.fetch(assetRequest);
       const html = await asset.text();
       const fixed = html
         .replace(/action=["'][^"']*["']/i,
