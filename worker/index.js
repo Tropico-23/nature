@@ -141,6 +141,34 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+
+    // Normalize older cached contact assets so this page never submits to a PHP URL.
+    if (env.ASSETS && request.method === "GET" &&
+        (url.pathname === "/contact" || url.pathname === "/contact.html")) {
+      const asset = await env.ASSETS.fetch(request);
+      const html = await asset.text();
+      const fixed = html
+        .replace(/action=["'][^"']*["']/i,
+          'action="https://nature.apopolo9800.workers.dev/api/contact"')
+        .replace(/<script src=["']js\\/main\\.js(?:\\?[^"']*)?["'] defer><\\/script>/i,
+          '<script src="js/main.js?v=20261104-contact-api" defer></script>');
+      const headers = new Headers(asset.headers);
+      headers.set("cache-control", "no-store, max-age=0");
+      headers.delete("content-length");
+      return new Response(fixed, { status: asset.status, statusText: asset.statusText, headers });
+    }
+
+    if (env.ASSETS && request.method === "GET" && url.pathname === "/js/main.js") {
+      const asset = await env.ASSETS.fetch(request);
+      let script = await asset.text();
+      script = script.replace(/fetch\\(form\\.action\\s*,/g,
+        'fetch(new URL("/api/contact", window.location.origin),');
+      const headers = new Headers(asset.headers);
+      headers.set("cache-control", "no-store, max-age=0");
+      headers.delete("content-length");
+      return new Response(script, { status: asset.status, statusText: asset.statusText, headers });
+    }
+
     if (url.pathname === "/api/health") {
       if (request.method !== "GET") {
         return json({ ok: false, message: "Méthode non autorisée." }, 405);
