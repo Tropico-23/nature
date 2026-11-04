@@ -2,6 +2,9 @@ const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
   "x-content-type-options": "nosniff",
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
+  "access-control-allow-headers": "Content-Type, Accept",
 };
 
 function json(data, status = 200) {
@@ -32,12 +35,6 @@ async function sha256(value) {
 async function handleContact(request, env) {
   if (request.method !== "POST") {
     return json({ ok: false, message: "Méthode non autorisée." }, 405);
-  }
-
-  const origin = request.headers.get("Origin");
-  const requestUrl = new URL(request.url);
-  if (origin && origin !== requestUrl.origin) {
-    return json({ ok: false, message: "Requête non autorisée." }, 403);
   }
 
   const length = Number(request.headers.get("Content-Length") || 0);
@@ -150,7 +147,7 @@ export default {
       const fixed = html
         .replace(/action=["'][^"']*["']/i,
           'action="https://nature.apopolo9800.workers.dev/api/contact"')
-        .replaceAll("js/main.js", "js/main.js?v=20261104-contact-api");
+        .replace(/js\/main\.js(?:\?[^"']*)?/g, "/js/main.js?v=20261104-contact-fix");
       const headers = new Headers(asset.headers);
       headers.set("cache-control", "no-store, max-age=0");
       headers.delete("content-length");
@@ -181,7 +178,12 @@ export default {
       }
     }
 
-    if (url.pathname === "/api/contact") {
+    // Keep the legacy PHP-looking URL working for already-cached pages.
+    // It is handled here by the Worker; no PHP runtime or PHP file is involved.
+    if (url.pathname === "/api/contact" || url.pathname === "/ajout.php") {
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: JSON_HEADERS });
+      }
       return handleContact(request, env);
     }
 
